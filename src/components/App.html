@@ -1,0 +1,70 @@
+<script>
+  import { fade, fly } from 'svelte-transitions';
+  import Counter from './Counter.html';
+  export default {
+    tag: 'app1-app',
+    components: {
+      Counter
+    },
+    data: () => ({
+      foobar: 'foobarValue'
+    }),
+    methods: {
+      alertPopup(event) {
+        alert(JSON.stringify(event))
+        alert(this.get('name'))
+        alert(this.constructor.const1)
+      }
+    },
+    oncreate() {
+      const canvas = this.refs.canvas;
+      const ctx = canvas.getContext('2d');
+    },
+    setup(constructor) {
+      constructor.const1 = 'CONST1VALUE';
+    },
+    transitions: { fade, fly }
+  };
+</script>
+
+<canvas ref:canvas width='200' height='100'></canvas>
+
+<h1>Hello, <span class="logo-font">{{name}}</span>. (store: name={{$name}})</h1>
+<input bind:value='name' placeholder='enter your name'><!-- two-way binding -->
+
+<ul>
+  {{#each games as game, i}}
+    <li ref:gameItem in:fly='{y: 50}' out:fade>#{{i + 1}} {{game}}</li>
+  {{/each}}
+</ul>
+
+{{#await promise}}
+  <p>wait for it...</p>
+{{then answer}}
+  <p>the answer is {{answer}}!</p>
+{{catch err}}
+  <p>well that's odd: {{err.message}}</p>
+{{/await}}
+
+<Counter isBig :foobar on:fakeEvent='alertPopup(event)' on:click='alertPopup(event)'>
+  <hr>
+  FOOTER SLOT
+  <hr>
+</Counter>
+
+<!-- Include styles -->
+<style>
+  h1 {
+    font-weight: 300;
+    font-family: Lato;
+  }
+  .logo-font {
+    text-transform: lowercase;
+    font-size: 2.5rem;
+    font-family: 'Rajdhani', sans-serif;
+    color: #aa1e1e;
+  }
+  ref:gameItem {
+    color: blue;
+  }
+</style>

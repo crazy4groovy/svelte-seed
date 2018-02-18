@@ -1,0 +1,110 @@
+<script>
+  import leftPad from 'left-pad';
+
+  export default {
+    tag: 'app1-counter',
+    data: () => ({
+      count: 0,
+      time: new Date()
+    }),
+
+    methods: {
+      handleClick(event, count) {
+        event.preventDefault();
+        console.log('the count is', count);
+        this.set({ count_old: this.get('count'), count, time: new Date() });
+      }
+    },
+
+    helpers: {
+      pad: num => leftPad(num, 2, '0')
+    },
+
+    events: {
+      longpress(node, callback) {
+
+        function onmousedown(event) {
+          const timeout = setTimeout(() => callback( event ), 500);
+
+          function cancel() {
+            clearTimeout(timeout);
+            node.removeEventListener('mouseup', cancel, false);
+          }
+
+          node.addEventListener('mouseup', cancel, false);
+        }
+
+        node.addEventListener('mousedown', onmousedown, false);
+        return { teardown: () => node.removeEventListener('mousedown', onmousedown, false) };
+      }
+    },
+
+    computed: {
+      hours: time => time.getHours(),
+      minutes: time => time.getMinutes(),
+      seconds: time => time.getSeconds()
+    },
+
+    oncreate() {
+      this.store.observe('width', (newValue, oldValue) => {
+        if (!oldValue) return;
+        alert(`width=${newValue}`);
+      });
+    },
+    ondestroy() {}
+  };
+</script>
+
+<:Window on:keydown='set({ key: event.key, keyCode: event.keyCode })' bind:scrollY='y'/>
+
+<:Head>
+  <title>{{count}} • My App</title>
+</:Head>
+
+<div class="counter-page">
+  {{#if key}}
+  <p><kbd>{{key === ' ' ? 'Space' : key}}</kbd> (code {{keyCode}})</p>
+  {{else}}
+  <p>click in this window and press any key</p>
+  {{/if}}
+
+  <p>user has scrolled {{y}} pixels</p>
+
+  {{#if count % 10 }}
+  <p>Count: {{count}} + 1 = {{count + 1}}</p>
+  {{else}}
+  <p>MOD 10 == 0 !</p>
+  {{/if}}
+
+  <button on:click='handleClick(event, count + 1)' on:longpress='handleClick(event, count + 10)'>+1</button>
+
+  <h2>Time is {{pad(hours)}}:{{pad(minutes)}}:{{pad(seconds)}}</h2>
+
+  <p>IS {{isBig ? 'BIG' : 'small' }}</p>
+  <p>{{foobar}}</p>
+
+  <div>Volume=<button on:click='store.set({ width: Math.random() })'>{{$volume}}</button></div>
+
+  <footer>
+    <slot>
+      <p>DEFAULT FOOTER CONTENT</p>
+    </slot>
+    <button on:click='fire("fakeEvent", { a: 123 })'>FIRE EVENT</button>
+    <button on:click>CLICK EVENT</button>
+  </footer>
+</div>
+
+<!-- Include styles -->
+<style>
+  .counter-page {
+    border: 1px solid #eee;
+    padding: 1em;
+  }
+  p,
+  button {
+    font-family: Lato;
+  }
+  footer {
+    color: green;
+  }
+</style>
